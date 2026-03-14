@@ -178,18 +178,18 @@ class Api extends CI_Controller {
         $aqi_data = array();
         foreach ($readings as $device_id => $sensors) {
             if (isset($sensors['gas'], $sensors['temperature'], $sensors['humidity'])) {
-                $ppm      = $sensors['gas']['value'];
+                $pm25     = $sensors['gas']['value'];
                 $temp_val = $sensors['temperature']['value'];
                 $hum_val  = $sensors['humidity']['value'];
-        
-                $index = $this->aqi_calculator->calculate_index($ppm, $temp_val, $hum_val);
-        
+
+                $index = $this->aqi_calculator->calculate_index($pm25, $temp_val, $hum_val);
+
                 $aqi_data[$device_id] = array(
                     'value'      => $index,
                     'label'      => $this->aqi_calculator->get_aqi_label($index),
                     'color'      => $this->aqi_calculator->get_aqi_color($index),
                     'text_color' => $this->aqi_calculator->get_aqi_text_color($index),
-                    'ppm'        => $ppm,
+                    'pm25'       => $pm25,
                     'temperature'=> $temp_val,
                     'humidity'   => $hum_val,
                 );
@@ -633,7 +633,7 @@ class Api extends CI_Controller {
         $sensor_labels = array(
             'temperature' => array('label' => 'Temperature', 'unit' => '°C'),
             'humidity'    => array('label' => 'Humidity', 'unit' => '%'),
-            'gas'         => array('label' => 'Gas', 'unit' => 'ppm'),
+            'gas'         => array('label' => 'Gas', 'unit' => 'pm2.5'),
             'pm25'        => array('label' => 'PM2.5', 'unit' => 'μg/m³')
         );
         $info = isset($sensor_labels[$sensor_type]) ? $sensor_labels[$sensor_type] : array('label' => $sensor_type, 'unit' => '');

@@ -54,7 +54,7 @@ function renderRiskCards(risks, current, forecasts) {
     var sensorMeta = {
         'temperature': { label: 'Temperature', unit: '°C', icon: 'fa-thermometer-half' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fa-tint' },
-        'gas':         { label: 'Gas', unit: 'ppm', icon: 'fa-cloud' },
+        'gas':         { label: 'Gas', unit: 'pm2.5', icon: 'fa-cloud' },
         'pm25':        { label: 'PM2.5', unit: 'μg/m³', icon: 'fa-smog' }
     };
 

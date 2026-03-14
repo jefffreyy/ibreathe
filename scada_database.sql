@@ -201,8 +201,8 @@ INSERT INTO `tbl_scada_alarms` (`name`, `device_id`, `sensor_type`, `condition_t
 ('Low Temperature', NULL, 'temperature', 'below', 16.00, 'warning', 'Temperature below 16°C', 1, 1),
 ('High Humidity', NULL, 'humidity', 'above', 75.00, 'warning', 'Humidity exceeds 75%', 1, 1),
 ('Low Humidity', NULL, 'humidity', 'below', 25.00, 'info', 'Humidity below 25%', 1, 1),
-('High CO2', NULL, 'co2', 'above', 1000.00, 'warning', 'CO2 level exceeds 1000ppm - ventilate room', 1, 1),
-('Critical CO2', NULL, 'co2', 'above', 2000.00, 'critical', 'CO2 level exceeds 2000ppm - immediate ventilation needed', 1, 1),
+('High CO2', NULL, 'co2', 'above', 1000.00, 'warning', 'CO2 level exceeds 1000pm2.5 - ventilate room', 1, 1),
+('Critical CO2', NULL, 'co2', 'above', 2000.00, 'critical', 'CO2 level exceeds 2000pm2.5 - immediate ventilation needed', 1, 1),
 ('Unhealthy PM2.5', NULL, 'pm25', 'above', 35.40, 'warning', 'PM2.5 exceeds moderate level', 1, 1),
 ('Hazardous PM2.5', NULL, 'pm25', 'above', 150.40, 'critical', 'PM2.5 at hazardous level', 1, 1);
 

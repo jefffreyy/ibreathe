@@ -7,7 +7,7 @@ function format_sensor_value($value, $type) {
     $units = array(
         'temperature' => '°C',
         'humidity'    => '%',
-        'co2'         => ' ppm',
+        'co2'         => ' pm2.5',
         'pm25'        => ' μg/m³'
     );
     $decimals = ($type === 'co2') ? 0 : 1;

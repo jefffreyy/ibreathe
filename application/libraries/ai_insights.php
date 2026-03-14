@@ -16,7 +16,7 @@ class Ai_insights {
     private $comfort = array(
         'temperature' => array('min' => 18, 'max' => 26, 'unit' => '°C', 'label' => 'Temperature'),
         'humidity'    => array('min' => 30, 'max' => 60, 'unit' => '%', 'label' => 'Humidity'),
-        'co2'         => array('min' => 0,  'max' => 800, 'unit' => 'ppm', 'label' => 'CO₂'),
+        'co2'         => array('min' => 0,  'max' => 800, 'unit' => 'pm2.5', 'label' => 'CO₂'),
         'pm25'        => array('min' => 0,  'max' => 12,  'unit' => 'μg/m³', 'label' => 'PM2.5')
     );
 
@@ -187,10 +187,10 @@ class Ai_insights {
             if (isset($sensors['co2'])) {
                 $v = $sensors['co2']['value'];
                 if ($v > 2000) {
-                    $insights[] = $this->_make(self::CRITICAL, 'fas fa-exclamation-circle', $room . ' CO₂ is dangerously high (' . round($v) . ' ppm) — ventilate immediately', 'Comfort');
+                    $insights[] = $this->_make(self::CRITICAL, 'fas fa-exclamation-circle', $room . ' CO₂ is dangerously high (' . round($v) . ' pm2.5) — ventilate immediately', 'Comfort');
                     $all_comfortable = false;
                 } elseif ($v > 1000) {
-                    $insights[] = $this->_make(self::WARNING, 'fas fa-cloud', $room . ' CO₂ is elevated (' . round($v) . ' ppm) — room needs ventilation', 'Comfort');
+                    $insights[] = $this->_make(self::WARNING, 'fas fa-cloud', $room . ' CO₂ is elevated (' . round($v) . ' pm2.5) — room needs ventilation', 'Comfort');
                     $all_comfortable = false;
                 }
             }

@@ -323,7 +323,7 @@ function renderForecastCard(forecasts) {
     var sensorInfo = {
         'temperature': { label: 'Temp', unit: '°C', icon: 'fas fa-thermometer-half', color: '#ef4444' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fas fa-tint', color: '#6366f1' },
-        'gas':         { label: 'Gas', unit: 'ppm', icon: 'fas fa-cloud', color: '#f59e0b' },
+        'gas':         { label: 'Gas', unit: 'pm2.5', icon: 'fas fa-cloud', color: '#f59e0b' },
         'pm25':        { label: 'PM2.5', unit: 'μg/m³', icon: 'fas fa-smog', color: '#10b981' }
     };
 

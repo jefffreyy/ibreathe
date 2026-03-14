@@ -12,7 +12,7 @@
 - Add new Rule Group 8: `_actionable_suggestions($readings, $aqi, $names)`
 - Per-sensor, per-room actionable advice like:
   - High temp: "Living Room is very hot (35°C). Please turn on the air conditioning or open windows for ventilation."
-  - High CO₂: "Bedroom CO₂ is high (1200 ppm). Open windows to improve air circulation."
+  - High CO₂: "Bedroom CO₂ is high (1200 pm2.5). Open windows to improve air circulation."
   - High PM2.5: "Kitchen air quality is poor. Please turn on the air purifier or exhaust fan."
   - High humidity: "Bathroom humidity is high (78%). Turn on the exhaust fan to prevent mold."
   - Low humidity: "Bedroom air is dry (22%). Consider using a humidifier."

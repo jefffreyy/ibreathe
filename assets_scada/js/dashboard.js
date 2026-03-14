@@ -68,7 +68,7 @@ function initTrendChart() {
             datasets: [
                 { label: 'Temperature (°C)', borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', data: [], fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
                 { label: 'Humidity (%)', borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', data: [], fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                { label: 'Gas (ppm)', borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' },
+                { label: 'Gas (pm2.5)', borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' },
                 { label: 'PM2.5 (μg/m³)', borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' }
             ]
         },
@@ -374,7 +374,7 @@ function renderForecastCard(forecasts) {
     var sensorInfo = {
         'temperature': { label: 'Temp', unit: '°C', icon: 'fas fa-thermometer-half', color: '#ef4444' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fas fa-tint', color: '#6366f1' },
-        'gas':         { label: 'Gas', unit: 'ppm', icon: 'fas fa-cloud', color: '#f59e0b' },
+        'gas':         { label: 'Gas', unit: 'pm2.5', icon: 'fas fa-cloud', color: '#f59e0b' },
         'pm25':        { label: 'PM2.5', unit: 'μg/m³', icon: 'fas fa-smog', color: '#10b981' }
     };
 

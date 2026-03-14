@@ -186,7 +186,7 @@ while (true) {
         echo "[{$timestamp}] {$device['name']}: "
             . "T={$readings['temperature']}C "
             . "H={$readings['humidity']}% "
-            . "CO2={$readings['co2']}ppm "
+            . "CO2={$readings['co2']}pm2.5 "
             . "PM2.5={$readings['pm25']}ug/m3 "
             . "[{$status}]";
 

@@ -37,7 +37,7 @@ function renderStatCards(analytics) {
     var sensorMeta = {
         'temperature': { label: 'Temperature', unit: '°C', icon: 'fa-thermometer-half', color: '#ef4444', bg: '#fef2f2' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fa-tint', color: '#6366f1', bg: '#eef2ff' },
-        'gas':         { label: 'Gas', unit: 'ppm', icon: 'fa-cloud', color: '#f59e0b', bg: '#fffbeb' }
+        'gas':         { label: 'Gas', unit: 'pm2.5', icon: 'fa-cloud', color: '#f59e0b', bg: '#fffbeb' }
       
     };
 

@@ -31,16 +31,16 @@ class Aqi_calculator {
     }
     
     // =========================================================
-    // Gas Score (MQ135 ppm → 0–500)
+    // Gas Score (MQ135 pm2.5 → 0–500)
     // =========================================================
-    private function gas_score($ppm) {
-        $ppm = max(0, $ppm);
-        if ($ppm <= 400)  return ($ppm / 400) * 50;
-        if ($ppm <= 700)  return 50  + (($ppm - 400)  / 300)  * 50;
-        if ($ppm <= 1000) return 100 + (($ppm - 700)  / 300)  * 50;
-        if ($ppm <= 2000) return 150 + (($ppm - 1000) / 1000) * 50;
-        if ($ppm <= 5000) return 200 + (($ppm - 2000) / 3000) * 100;
-        return min(500, 300 + (($ppm - 5000) / 5000) * 200);
+    private function gas_score($pm25) {
+        $pm25 = max(0, $pm25);
+        if ($pm25 <= 400)  return ($pm25 / 400) * 50;
+        if ($pm25 <= 700)  return 50  + (($pm25 - 400)  / 300)  * 50;
+        if ($pm25 <= 1000) return 100 + (($pm25 - 700)  / 300)  * 50;
+        if ($pm25 <= 2000) return 150 + (($pm25 - 1000) / 1000) * 50;
+        if ($pm25 <= 5000) return 200 + (($pm25 - 2000) / 3000) * 100;
+        return min(500, 300 + (($pm25 - 5000) / 5000) * 200);
     }
 
     // =========================================================
@@ -81,8 +81,8 @@ class Aqi_calculator {
     // MAIN: Composite AQI
     // Formula: (Gas×0.50) + (Temp×0.30) + (Humidity×0.20)
     // =========================================================
-    public function calculate_index($ppm, $temp_c, $humidity) {
-        $g = $this->gas_score($ppm);
+    public function calculate_index($pm25, $temp_c, $humidity) {
+        $g = $this->gas_score($pm25);
         $t = $this->temp_score($temp_c);
         $h = $this->humidity_score($humidity);
 

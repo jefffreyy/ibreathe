@@ -141,7 +141,7 @@ function loadTrend() {
         if (trendMainChart) trendMainChart.destroy();
 
         var colors = { temperature: '#ef4444', humidity: '#3b82f6', gas: '#eab308'};
-        var units = { temperature: '°C', humidity: '%', gas: 'ppm'};
+        var units = { temperature: '°C', humidity: '%', gas: 'pm2.5'};
 
         trendMainChart = new Chart($('#trend-main-chart')[0].getContext('2d'), {
             type: 'line',

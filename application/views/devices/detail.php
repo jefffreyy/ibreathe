@@ -67,7 +67,7 @@
                         <div class="row">
                             <?php
                             $sensor_icons = array('temperature'=>'fa-thermometer-half text-danger','humidity'=>'fa-tint text-info','co2'=>'fa-cloud text-warning','pm25'=>'fa-smog text-success');
-                            $sensor_units = array('temperature'=>'°C','humidity'=>'%','co2'=>'ppm','pm25'=>'μg/m³');
+                            $sensor_units = array('temperature'=>'°C','humidity'=>'%','co2'=>'pm2.5','pm25'=>'μg/m³');
                             $readings_map = array();
                             foreach ($latest_readings as $r) { $readings_map[$r->sensor_type] = $r; }
                             foreach (array('temperature','humidity','co2','pm25') as $type):

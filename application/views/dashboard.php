@@ -114,7 +114,7 @@
                         <div class="gauge-container">
                             <canvas id="gauge-co2" width="200" height="120"></canvas>
                             <div class="gauge-value" id="val-co2">--</div>
-                            <div class="gauge-unit">ppm</div>
+                            <div class="gauge-unit">pm2.5</div>
                         </div>
                     </div>
                 </div>
