@@ -259,7 +259,7 @@
                         
                         if (row.sensor_type == 'humidity') {
                             tableHtml += ' <span class="badge badge-info">💧</span>';
-                        } else if (row.sensor_type == 'gas') {
+                        } else if (row.sensor_type == 'pm2.5') {
                             tableHtml += ' <span class="badge badge-warning">⚠️</span>';
                         }
                         
@@ -275,7 +275,7 @@
                         } else {
                             tableHtml += '<strong>' + row.value + '</strong>';
                             if (parseFloat(row.value) > 0) {
-                                tableHtml += ' <span class="badge badge-danger">Gas Detected!</span>';
+                                tableHtml += ' <span class="badge badge-danger">PM2.5 Detected!</span>';
                             }
                         }
                         

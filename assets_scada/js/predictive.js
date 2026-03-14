@@ -54,8 +54,7 @@ function renderRiskCards(risks, current, forecasts) {
     var sensorMeta = {
         'temperature': { label: 'Temperature', unit: '°C', icon: 'fa-thermometer-half' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fa-tint' },
-        'gas':         { label: 'Gas', unit: 'pm2.5', icon: 'fa-cloud' },
-        'pm25':        { label: 'PM2.5', unit: 'μg/m³', icon: 'fa-smog' }
+        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fa-smog' }
     };
 
     var riskColors = {
@@ -134,7 +133,7 @@ function renderForecastChart(sensor) {
         lower.push(p.confidence_lower.toFixed(1));
     });
 
-    var colors = { temperature: '#ef4444', humidity: '#6366f1', gas: '#f59e0b', pm25: '#10b981' };
+    var colors = { temperature: '#ef4444', humidity: '#6366f1', pm25: '#10b981' };
     var color = colors[sensor] || '#64748b';
 
     forecastChart = new Chart($('#forecast-chart')[0].getContext('2d'), {
@@ -193,7 +192,7 @@ function renderAnomalies(anomalies) {
         return;
     }
 
-    var sensorLabels = { temperature: 'Temperature', humidity: 'Humidity', gas: 'Gas', pm25: 'PM2.5' };
+    var sensorLabels = { temperature: 'Temperature', humidity: 'Humidity', pm25: 'PM2.5' };
     var html = '';
 
     $.each(anomalies, function(sensor, anom) {
@@ -220,7 +219,7 @@ function renderRecommendations(recs) {
     }
 
     var html = '';
-    var sensorLabels = { temperature: 'Temperature', humidity: 'Humidity', Gas: 'Gas', pm25: 'PM2.5' };
+    var sensorLabels = { temperature: 'Temperature', humidity: 'Humidity', pm25: 'PM2.5' };
 
     recs.forEach(function(r) {
         var icon = r.severity === 'critical' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle';

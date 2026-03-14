@@ -17,7 +17,7 @@
                         <?php echo htmlspecialchars($row->sensor_type); ?>
                         <?php if($row->sensor_type == 'humidity'): ?>
                             <span class="badge badge-info">💧</span>
-                        <?php elseif($row->sensor_type == 'gas'): ?>
+                        <?php elseif($row->sensor_type == 'pm2.5'): ?>
                             <span class="badge badge-warning">⚠️</span>
                         <?php endif; ?>
                     </td>
@@ -31,7 +31,7 @@
                         <?php else: ?>
                             <strong><?php echo $row->value; ?></strong>
                             <?php if($row->value > 0): ?>
-                                <span class="badge badge-danger">Gas Detected!</span>
+                                <span class="badge badge-danger">PM2.5 Detected!</span>
                             <?php endif; ?>
                         <?php endif; ?>
                     </td>

@@ -23,7 +23,6 @@ function initGauges() {
     var gaugeConfigs = {
         'temperature': { min: 10, max: 45, colors: ['#3b82f6', '#22c55e', '#22c55e', '#ef4444'] },
         'humidity':    { min: 0,  max: 100, colors: ['#ef4444', '#22c55e', '#22c55e', '#3b82f6'] },
-        'gas':         { min: 0,  max: 3000, colors: ['#22c55e', '#22c55e', '#eab308', '#ef4444'] },
         'pm25':        { min: 0,  max: 200, colors: ['#22c55e', '#eab308', '#f97316', '#ef4444'] }
     };
 
@@ -68,8 +67,7 @@ function initTrendChart() {
             datasets: [
                 { label: 'Temperature (°C)', borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', data: [], fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
                 { label: 'Humidity (%)', borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', data: [], fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                { label: 'Gas (pm2.5)', borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' },
-                { label: 'PM2.5 (μg/m³)', borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' }
+                { label: 'PM2.5 (µg/m³)', borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' }
             ]
         },
         options: {
@@ -115,7 +113,7 @@ function initTrendChart() {
                     position: 'right',
                     grid: { drawOnChartArea: false, drawBorder: false },
                     ticks: { color: '#94a3b8', font: { size: 10, family: "'Inter', sans-serif" } },
-                    title: { display: true, text: 'CO₂ / PM2.5', color: '#94a3b8', font: { size: 11, family: "'Inter', sans-serif", weight: '500' } }
+                    title: { display: true, text: 'PM2.5 (µg/m³)', color: '#94a3b8', font: { size: 11, family: "'Inter', sans-serif", weight: '500' } }
                 }
             }
         }
@@ -155,7 +153,7 @@ function updateGauges(readings) {
     if (!deviceId) return;
 
     var sensors = readings[deviceId];
-    var types = ['temperature', 'humidity', 'gas', 'pm25'];
+    var types = ['temperature', 'humidity', 'pm25'];
 
     types.forEach(function(type) {
         if (!sensors[type] || !gaugeCharts[type]) return;
@@ -173,7 +171,7 @@ function updateGauges(readings) {
         gaugeCharts[type].update();
 
         // Update text value
-        var display = (type === 'gas') ? Math.round(value) : value.toFixed(1);
+        var display = (type === 'pm25') ? Math.round(value) : value.toFixed(1);
         $('#val-' + type).text(display);
     });
 }
@@ -246,11 +244,10 @@ function updateTrendChart(trends) {
     if (!trendChart || !trends) return;
 
     // Find the first device's trend data
-    var tempKey = null, humKey = null, co2Key = null, pm25Key = null;
+    var tempKey = null, humKey = null, pm25Key = null;
     $.each(trends, function(key) {
         if (key.indexOf('_temperature') > -1) tempKey = key;
         if (key.indexOf('_humidity') > -1) humKey = key;
-        if (key.indexOf('_gas') > -1) co2Key = key;
         if (key.indexOf('_pm25') > -1) pm25Key = key;
     });
 
@@ -261,11 +258,8 @@ function updateTrendChart(trends) {
     if (humKey && trends[humKey]) {
         trendChart.data.datasets[1].data = trends[humKey].values;
     }
-    if (co2Key && trends[co2Key]) {
-        trendChart.data.datasets[2].data = trends[co2Key].values;
-    }
     if (pm25Key && trends[pm25Key]) {
-        trendChart.data.datasets[3].data = trends[pm25Key].values;
+        trendChart.data.datasets[2].data = trends[pm25Key].values;
     }
 
     trendChart.update();
@@ -374,8 +368,7 @@ function renderForecastCard(forecasts) {
     var sensorInfo = {
         'temperature': { label: 'Temp', unit: '°C', icon: 'fas fa-thermometer-half', color: '#ef4444' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fas fa-tint', color: '#6366f1' },
-        'gas':         { label: 'Gas', unit: 'pm2.5', icon: 'fas fa-cloud', color: '#f59e0b' },
-        'pm25':        { label: 'PM2.5', unit: 'μg/m³', icon: 'fas fa-smog', color: '#10b981' }
+        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' }
     };
 
     var html = '<div class="forecast-header-row"><div class="forecast-sensor"></div>'

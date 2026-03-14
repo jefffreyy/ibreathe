@@ -75,7 +75,7 @@
         <!-- Gauge Widgets Row -->
         <div class="row" id="gauge-row">
             <!-- Temperature Gauge -->
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="card scada-gauge-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-thermometer-half text-danger mr-2"></i>Temperature</h3>
@@ -90,7 +90,7 @@
                 </div>
             </div>
             <!-- Humidity Gauge -->
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="card scada-gauge-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-tint text-info mr-2"></i>Humidity</h3>
@@ -104,23 +104,8 @@
                     </div>
                 </div>
             </div>
-            <!-- CO2 Gauge -->
-            <div class="col-lg-3 col-md-6">
-                <div class="card scada-gauge-card">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-cloud text-warning mr-2"></i>CO&#8322;</h3>
-                    </div>
-                    <div class="card-body text-center">
-                        <div class="gauge-container">
-                            <canvas id="gauge-co2" width="200" height="120"></canvas>
-                            <div class="gauge-value" id="val-co2">--</div>
-                            <div class="gauge-unit">pm2.5</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             <!-- PM2.5 Gauge -->
-            <div class="col-lg-3 col-md-6">
+            <div class="col-lg-4 col-md-6">
                 <div class="card scada-gauge-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-smog text-success mr-2"></i>PM2.5</h3>
@@ -129,7 +114,7 @@
                         <div class="gauge-container">
                             <canvas id="gauge-pm25" width="200" height="120"></canvas>
                             <div class="gauge-value" id="val-pm25">--</div>
-                            <div class="gauge-unit">&mu;g/m&sup3;</div>
+                            <div class="gauge-unit">µg/m³</div>
                         </div>
                     </div>
                 </div>

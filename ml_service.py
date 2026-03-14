@@ -38,7 +38,7 @@ ML_CONFIG = {
 SENSOR_LABELS = {
     'temperature': ('Temperature', '\u00b0C'),
     'humidity': ('Humidity', '%'),
-    'co2': ('CO\u2082', 'pm2.5'),
+    'co2': ('CO\u2082', 'µg/m³'),
     'pm25': ('PM2.5', '\u03bcg/m\u00b3'),
 }
 

@@ -25,7 +25,7 @@
                         <select class="form-control form-control-sm" id="trend-sensor">
                             <option value="temperature">Temperature</option>
                             <option value="humidity">Humidity</option>
-                            <option value="gas">Gas</option>
+                            <option value="pm25">PM2.5</option>
                             
                         </select>
                     </div>
@@ -141,7 +141,7 @@ function loadTrend() {
         if (trendMainChart) trendMainChart.destroy();
 
         var colors = { temperature: '#ef4444', humidity: '#3b82f6', gas: '#eab308'};
-        var units = { temperature: '°C', humidity: '%', gas: 'pm2.5'};
+        var units = { temperature: '°C', humidity: '%', gas: 'µg/m³'};
 
         trendMainChart = new Chart($('#trend-main-chart')[0].getContext('2d'), {
             type: 'line',

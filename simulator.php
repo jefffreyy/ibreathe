@@ -172,8 +172,7 @@ while (true) {
         $readings = array(
             'temperature' => round($s['temperature'], 1),
             'humidity'    => round($s['humidity'], 1),
-            'co2'         => round($s['co2'], 0),
-            'pm25'        => round($s['pm25'], 1)
+            'pm2.5'       => round($s['pm25'], 1)
         );
 
         // POST data
@@ -186,7 +185,7 @@ while (true) {
         echo "[{$timestamp}] {$device['name']}: "
             . "T={$readings['temperature']}C "
             . "H={$readings['humidity']}% "
-            . "CO2={$readings['co2']}pm2.5 "
+            . "CO2={$readings['co2']}µg/m³ "
             . "PM2.5={$readings['pm25']}ug/m3 "
             . "[{$status}]";
 

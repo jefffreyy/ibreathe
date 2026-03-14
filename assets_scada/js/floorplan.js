@@ -89,11 +89,11 @@ function updateFloorPlan(devices) {
         if (sensors) {
             if (sensors.temperature) $group.find('.val-temp').text(sensors.temperature.value.toFixed(1));
             if (sensors.humidity) $group.find('.val-hum').text(sensors.humidity.value.toFixed(1));
-  // Gas - with null check
+  // PM2.5 - with null check
     var $gasElement = $group.find('.val-gas');
     if ($gasElement.length) {
-        if (sensors.gas && sensors.gas.value != null) {
-            $gasElement.text(sensors.gas.value.toFixed(1));
+        if (sensors.pm25 && sensors.pm25.value != null) {
+            $gasElement.text(sensors.pm25.value.toFixed(1));
         } else {
             $gasElement.text('--'); // Display placeholder when no data
         }
@@ -106,7 +106,7 @@ function updateFloorPlan(devices) {
         } else {
             $group.find('.val-temp').attr('fill', '#1e293b');
         }
-        if (sensors && sensors.gas && sensors.gas.value > 10) {
+        if (sensors && sensors.pm25 && sensors.pm25.value > 10) {
             $group.find('.val-gas').attr('fill', '#d97706');
         } else {
             $group.find('.val-gas').attr('fill', '#1e293b');
@@ -323,8 +323,7 @@ function renderForecastCard(forecasts) {
     var sensorInfo = {
         'temperature': { label: 'Temp', unit: '°C', icon: 'fas fa-thermometer-half', color: '#ef4444' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fas fa-tint', color: '#6366f1' },
-        'gas':         { label: 'Gas', unit: 'pm2.5', icon: 'fas fa-cloud', color: '#f59e0b' },
-        'pm25':        { label: 'PM2.5', unit: 'μg/m³', icon: 'fas fa-smog', color: '#10b981' }
+        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' }
     };
 
     var html = '<div class="forecast-header-row"><div class="forecast-sensor"></div>'

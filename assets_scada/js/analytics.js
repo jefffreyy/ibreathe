@@ -37,7 +37,7 @@ function renderStatCards(analytics) {
     var sensorMeta = {
         'temperature': { label: 'Temperature', unit: '°C', icon: 'fa-thermometer-half', color: '#ef4444', bg: '#fef2f2' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fa-tint', color: '#6366f1', bg: '#eef2ff' },
-        'gas':         { label: 'Gas', unit: 'pm2.5', icon: 'fa-cloud', color: '#f59e0b', bg: '#fffbeb' }
+        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fa-smog', color: '#10b981', bg: '#ecfdf5' }
       
     };
 
@@ -76,7 +76,7 @@ function renderDistributionChart(analytics) {
 
     // Pick first available sensor with distribution data
     var sensor = null;
-    var order = ['temperature', 'humidity', 'gas'];
+    var order = ['temperature', 'humidity', 'pm25'];
     for (var i = 0; i < order.length; i++) {
         if (analytics[order[i]] && analytics[order[i]].distribution && analytics[order[i]].distribution.length > 0) {
             sensor = order[i];
@@ -88,7 +88,7 @@ function renderDistributionChart(analytics) {
     var dist = analytics[sensor].distribution;
     var labels = dist.map(function(b) { return b.label; });
     var counts = dist.map(function(b) { return b.count; });
-    var colors = { temperature: '#ef4444', humidity: '#6366f1', Gas: '#f59e0b'};
+    var colors = { temperature: '#ef4444', humidity: '#6366f1', pm25: '#10b981'};
 
     distributionChart = new Chart($('#distribution-chart')[0].getContext('2d'), {
         type: 'bar',
@@ -116,7 +116,7 @@ function renderDistributionChart(analytics) {
 function renderHourlyChart(analytics) {
     if (hourlyChart) hourlyChart.destroy();
 
-    var colors = { temperature: '#ef4444', humidity: '#6366f1', Gas: '#f59e0b'};
+    var colors = { temperature: '#ef4444', humidity: '#6366f1', pm25: '#10b981'};
     var datasets = [];
     var labels = [];
     for (var h = 0; h < 24; h++) { labels.push(h + ':00'); }
@@ -135,7 +135,7 @@ function renderHourlyChart(analytics) {
             fill: false,
             tension: 0.3,
             pointRadius: 3,
-            yAxisID: sensor === 'gas' ? 'y2' : 'y'
+            yAxisID: sensor === 'pm25' ? 'y2' : 'y'
         });
     });
 
@@ -198,7 +198,7 @@ function renderCorrelations(correlations) {
 }
 
 function loadAnalyticsInsights(deviceId, from, to) {
-    var sensors = ['temperature', 'humidity', 'Gas'];
+    var sensors = ['temperature', 'humidity', 'pm25'];
     var allInsights = [];
     var done = 0;
 
