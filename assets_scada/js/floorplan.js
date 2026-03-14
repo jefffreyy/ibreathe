@@ -95,7 +95,16 @@ function updateFloorPlan(devices) {
         if (sensors.pm25 && sensors.pm25.value != null) {
             $gasElement.text(sensors.pm25.value.toFixed(1));
         } else {
-            $gasElement.text('--'); // Display placeholder when no data
+            $gasElement.text('--');
+        }
+    }
+    // CO - computed value
+    var $coElement = $group.find('.val-co');
+    if ($coElement.length) {
+        if (sensors.co && sensors.co.value != null) {
+            $coElement.text(sensors.co.value.toFixed(1));
+        } else {
+            $coElement.text('--');
         }
     }
        }
@@ -115,6 +124,14 @@ function updateFloorPlan(devices) {
             $group.find('.val-pm25').attr('fill', '#dc2626');
         } else {
             $group.find('.val-pm25').attr('fill', '#1e293b');
+        }
+        // CO highlight
+        if (sensors && sensors.co && sensors.co.value > 35) {
+            $group.find('.val-co').attr('fill', '#dc2626');
+        } else if (sensors && sensors.co && sensors.co.value > 9) {
+            $group.find('.val-co').attr('fill', '#d97706');
+        } else {
+            $group.find('.val-co').attr('fill', '#1e293b');
         }
     });
 }
@@ -323,7 +340,8 @@ function renderForecastCard(forecasts) {
     var sensorInfo = {
         'temperature': { label: 'Temp', unit: '°C', icon: 'fas fa-thermometer-half', color: '#ef4444' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fas fa-tint', color: '#6366f1' },
-        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' }
+        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' },
+        'co':          { label: 'CO', unit: 'ppm', icon: 'fas fa-skull-crossbones', color: '#f59e0b' }
     };
 
     var html = '<div class="forecast-header-row"><div class="forecast-sensor"></div>'

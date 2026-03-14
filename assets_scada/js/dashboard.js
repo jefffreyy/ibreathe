@@ -23,7 +23,8 @@ function initGauges() {
     var gaugeConfigs = {
         'temperature': { min: 10, max: 45, colors: ['#3b82f6', '#22c55e', '#22c55e', '#ef4444'] },
         'humidity':    { min: 0,  max: 100, colors: ['#ef4444', '#22c55e', '#22c55e', '#3b82f6'] },
-        'pm25':        { min: 0,  max: 200, colors: ['#22c55e', '#eab308', '#f97316', '#ef4444'] }
+        'pm25':        { min: 0,  max: 200, colors: ['#22c55e', '#eab308', '#f97316', '#ef4444'] },
+        'co':          { min: 0,  max: 200, colors: ['#22c55e', '#eab308', '#f97316', '#ef4444'] }
     };
 
     $.each(gaugeConfigs, function(type, config) {
@@ -67,7 +68,8 @@ function initTrendChart() {
             datasets: [
                 { label: 'Temperature (°C)', borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)', data: [], fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
                 { label: 'Humidity (%)', borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.08)', data: [], fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
-                { label: 'PM2.5 (µg/m³)', borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' }
+                { label: 'PM2.5 (µg/m³)', borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' },
+                { label: 'CO (ppm)', borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.05)', data: [], fill: false, tension: 0.4, pointRadius: 0, borderWidth: 2, yAxisID: 'y2' }
             ]
         },
         options: {
@@ -153,7 +155,7 @@ function updateGauges(readings) {
     if (!deviceId) return;
 
     var sensors = readings[deviceId];
-    var types = ['temperature', 'humidity', 'pm25'];
+    var types = ['temperature', 'humidity', 'pm25', 'co'];
 
     types.forEach(function(type) {
         if (!sensors[type] || !gaugeCharts[type]) return;
@@ -171,7 +173,7 @@ function updateGauges(readings) {
         gaugeCharts[type].update();
 
         // Update text value
-        var display = (type === 'pm25') ? Math.round(value) : value.toFixed(1);
+        var display = (type === 'pm25' || type === 'co') ? Math.round(value) : value.toFixed(1);
         $('#val-' + type).text(display);
     });
 }
@@ -244,11 +246,12 @@ function updateTrendChart(trends) {
     if (!trendChart || !trends) return;
 
     // Find the first device's trend data
-    var tempKey = null, humKey = null, pm25Key = null;
+    var tempKey = null, humKey = null, pm25Key = null, coKey = null;
     $.each(trends, function(key) {
         if (key.indexOf('_temperature') > -1) tempKey = key;
         if (key.indexOf('_humidity') > -1) humKey = key;
         if (key.indexOf('_pm25') > -1) pm25Key = key;
+        if (key.indexOf('_co') > -1 && key.indexOf('_co2') === -1) coKey = key;
     });
 
     if (tempKey && trends[tempKey]) {
@@ -260,6 +263,9 @@ function updateTrendChart(trends) {
     }
     if (pm25Key && trends[pm25Key]) {
         trendChart.data.datasets[2].data = trends[pm25Key].values;
+    }
+    if (coKey && trends[coKey]) {
+        trendChart.data.datasets[3].data = trends[coKey].values;
     }
 
     trendChart.update();
@@ -368,7 +374,8 @@ function renderForecastCard(forecasts) {
     var sensorInfo = {
         'temperature': { label: 'Temp', unit: '°C', icon: 'fas fa-thermometer-half', color: '#ef4444' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fas fa-tint', color: '#6366f1' },
-        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' }
+        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' },
+        'co':          { label: 'CO', unit: 'ppm', icon: 'fas fa-skull-crossbones', color: '#f59e0b' }
     };
 
     var html = '<div class="forecast-header-row"><div class="forecast-sensor"></div>'

@@ -45,8 +45,8 @@
         <div class="row" id="analytics-stats" style="display:none">
             <div class="col-md-3" id="card-temperature"></div>
             <div class="col-md-3" id="card-humidity"></div>
-            <div class="col-md-3" id="card-gas"></div>
-            
+            <div class="col-md-3" id="card-pm25"></div>
+            <div class="col-md-3" id="card-co"></div>
         </div>
 
         <!-- Charts Row -->

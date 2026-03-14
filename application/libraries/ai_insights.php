@@ -17,7 +17,8 @@ class Ai_insights {
         'temperature' => array('min' => 18, 'max' => 26, 'unit' => '°C', 'label' => 'Temperature'),
         'humidity'    => array('min' => 30, 'max' => 60, 'unit' => '%', 'label' => 'Humidity'),
         'co2'         => array('min' => 0,  'max' => 800, 'unit' => 'µg/m³', 'label' => 'CO₂'),
-        'pm25'        => array('min' => 0,  'max' => 12,  'unit' => 'μg/m³', 'label' => 'PM2.5')
+        'pm25'        => array('min' => 0,  'max' => 12,  'unit' => 'μg/m³', 'label' => 'PM2.5'),
+        'co'          => array('min' => 0,  'max' => 9,   'unit' => 'ppm',   'label' => 'CO')
     );
 
     /**
@@ -103,7 +104,7 @@ class Ai_insights {
         $insights = array();
         if (count($readings) < 2) return $insights;
 
-        $sensor_types = array('temperature', 'humidity', 'co2', 'pm25');
+        $sensor_types = array('temperature', 'humidity', 'co2', 'pm25', 'co');
 
         foreach ($sensor_types as $type) {
             $vals = array();
@@ -206,10 +207,25 @@ class Ai_insights {
                     $all_comfortable = false;
                 }
             }
+
+            // CO (Carbon Monoxide)
+            if (isset($sensors['co'])) {
+                $v = $sensors['co']['value'];
+                if ($v > 100) {
+                    $insights[] = $this->_make(self::CRITICAL, 'fas fa-skull-crossbones', $room . ' CO is dangerously high (' . round($v) . ' ppm) — evacuate and ventilate immediately', 'Comfort');
+                    $all_comfortable = false;
+                } elseif ($v > 35) {
+                    $insights[] = $this->_make(self::WARNING, 'fas fa-skull-crossbones', $room . ' CO level is elevated (' . round($v) . ' ppm) — check for sources and ventilate', 'Comfort');
+                    $all_comfortable = false;
+                } elseif ($v > 9) {
+                    $insights[] = $this->_make(self::INFO, 'fas fa-skull-crossbones', $room . ' CO is moderate (' . round($v) . ' ppm) — monitor closely', 'Comfort');
+                    $all_comfortable = false;
+                }
+            }
         }
 
         if ($all_comfortable && count($readings) > 0) {
-            $insights[] = $this->_make(self::GOOD, 'fas fa-check-circle', 'All rooms are within comfortable ranges for temperature, humidity, CO₂, and PM2.5', 'Comfort');
+            $insights[] = $this->_make(self::GOOD, 'fas fa-check-circle', 'All rooms are within comfortable ranges for temperature, humidity, PM2.5, and CO', 'Comfort');
         }
 
         return $insights;

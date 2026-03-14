@@ -66,11 +66,11 @@
                     <div class="card-body">
                         <div class="row">
                             <?php
-                            $sensor_icons = array('temperature'=>'fa-thermometer-half text-danger','humidity'=>'fa-tint text-info','co2'=>'fa-cloud text-warning','pm25'=>'fa-smog text-success');
-                            $sensor_units = array('temperature'=>'°C','humidity'=>'%','co2'=>'µg/m³','pm25'=>'μg/m³');
+                            $sensor_icons = array('temperature'=>'fa-thermometer-half text-danger','humidity'=>'fa-tint text-info','co2'=>'fa-cloud text-warning','pm25'=>'fa-smog text-success','co'=>'fa-skull-crossbones text-warning');
+                            $sensor_units = array('temperature'=>'°C','humidity'=>'%','co2'=>'µg/m³','pm25'=>'μg/m³','co'=>'ppm');
                             $readings_map = array();
                             foreach ($latest_readings as $r) { $readings_map[$r->sensor_type] = $r; }
-                            foreach (array('temperature','humidity','co2','pm25') as $type):
+                            foreach (array('temperature','humidity','pm25','co') as $type):
                                 $val = isset($readings_map[$type]) ? $readings_map[$type]->value : '--';
                                 $time = isset($readings_map[$type]) ? date('H:i:s', strtotime($readings_map[$type]->recorded_at)) : '--';
                             ?>

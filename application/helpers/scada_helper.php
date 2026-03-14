@@ -8,9 +8,10 @@ function format_sensor_value($value, $type) {
         'temperature' => '°C',
         'humidity'    => '%',
         'co2'         => ' µg/m³',
-        'pm25'        => ' μg/m³'
+        'pm25'        => ' μg/m³',
+        'co'          => ' ppm'
     );
-    $decimals = ($type === 'co2') ? 0 : 1;
+    $decimals = ($type === 'co2' || $type === 'co') ? 0 : 1;
     return number_format($value, $decimals) . (isset($units[$type]) ? $units[$type] : '');
 }
 
@@ -22,7 +23,8 @@ function sensor_display_name($type) {
         'temperature' => 'Temperature',
         'humidity'    => 'Humidity',
         'co2'         => 'CO₂',
-        'pm25'        => 'PM2.5'
+        'pm25'        => 'PM2.5',
+        'co'          => 'CO'
     );
     return isset($names[$type]) ? $names[$type] : ucfirst($type);
 }
@@ -35,7 +37,8 @@ function sensor_icon($type) {
         'temperature' => 'fas fa-thermometer-half',
         'humidity'    => 'fas fa-tint',
         'co2'         => 'fas fa-cloud',
-        'pm25'        => 'fas fa-smog'
+        'pm25'        => 'fas fa-smog',
+        'co'          => 'fas fa-skull-crossbones'
     );
     return isset($icons[$type]) ? $icons[$type] : 'fas fa-chart-line';
 }

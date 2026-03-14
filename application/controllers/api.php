@@ -180,13 +180,22 @@ class Api extends CI_Controller {
             $trends[$key]['labels'][] = date('H:i', strtotime($t->time_bucket));
             $trends[$key]['values'][] = round(floatval($t->avg_value), 2);
         }
-        // Calculate AQI from PM2.5
+        // Compute CO and calculate AQI from PM2.5
         $aqi_data = array();
         foreach ($readings as $device_id => $sensors) {
+            // Compute CO from PM2.5, temperature, humidity
             if (isset($sensors['pm25'], $sensors['temperature'], $sensors['humidity'])) {
                 $pm25     = $sensors['pm25']['value'];
                 $temp_val = $sensors['temperature']['value'];
                 $hum_val  = $sensors['humidity']['value'];
+
+                $co_val = $this->co_calculator->calculate_co($pm25, $temp_val, $hum_val);
+                $readings[$device_id]['co'] = array(
+                    'value'       => $co_val,
+                    'recorded_at' => $sensors['pm25']['recorded_at'],
+                    'label'       => $this->co_calculator->get_co_label($co_val),
+                    'color'       => $this->co_calculator->get_co_color($co_val)
+                );
 
                 $index = $this->aqi_calculator->calculate_index($pm25, $temp_val, $hum_val);
 
@@ -395,6 +404,21 @@ class Api extends CI_Controller {
                 );
             }
 
+            // Compute CO from PM2.5, temperature, humidity
+            if (isset($sensors['pm25'], $sensors['temperature'], $sensors['humidity'])) {
+                $co_val = $this->co_calculator->calculate_co(
+                    $sensors['pm25']['value'],
+                    $sensors['temperature']['value'],
+                    $sensors['humidity']['value']
+                );
+                $sensors['co'] = array(
+                    'value'       => $co_val,
+                    'recorded_at' => $sensors['pm25']['recorded_at'],
+                    'label'       => $this->co_calculator->get_co_label($co_val),
+                    'color'       => $this->co_calculator->get_co_color($co_val)
+                );
+            }
+
             $aqi_value = null;
             $aqi_label = null;
             $aqi_color = null;
@@ -464,9 +488,20 @@ class Api extends CI_Controller {
             $trends[$key]['values'][] = round(floatval($t->avg_value), 2);
         }
 
-        // Calculate AQI
+        // Compute CO and calculate AQI
         $aqi_data = array();
         foreach ($readings as $device_id => $sensors) {
+            if (isset($sensors['pm25'], $sensors['temperature'], $sensors['humidity'])) {
+                $co_val = $this->co_calculator->calculate_co(
+                    $sensors['pm25']['value'],
+                    $sensors['temperature']['value'],
+                    $sensors['humidity']['value']
+                );
+                $readings[$device_id]['co'] = array(
+                    'value'       => $co_val,
+                    'recorded_at' => $sensors['pm25']['recorded_at']
+                );
+            }
             if (isset($sensors['pm25'])) {
                 $pm25_val = $sensors['pm25']['value'];
                 $aqi_val = $this->aqi_calculator->calculate_aqi($pm25_val);
@@ -1036,7 +1071,7 @@ class Api extends CI_Controller {
         $this->load->library('ml_client');
         $ml_available = $this->ml_client->is_available();
 
-        $sensor_types = array('temperature', 'humidity', 'pm25');
+        $sensor_types = array('temperature', 'humidity', 'pm25', 'co');
         $forecasts = array();
         $anomalies = array();
         $risks = array();
@@ -1049,11 +1084,21 @@ class Api extends CI_Controller {
             $latest_map[$k] = floatval($r->value);
         }
 
+        // Compute CO from PM2.5, temperature, humidity
+        if (isset($latest_map['pm25'], $latest_map['temperature'], $latest_map['humidity'])) {
+            $latest_map['co'] = $this->co_calculator->calculate_co(
+                $latest_map['pm25'],
+                $latest_map['temperature'],
+                $latest_map['humidity']
+            );
+        }
+
         // Thresholds for risk assessment
         $thresholds = array(
             'temperature' => array('warn' => 30, 'crit' => 35),
             'humidity'    => array('warn' => 70, 'crit' => 80),
-            'pm25'        => array('warn' => 35, 'crit' => 55)
+            'pm25'        => array('warn' => 35, 'crit' => 55),
+            'co'          => array('warn' => 9, 'crit' => 35)
         );
 
         foreach ($sensor_types as $st) {
@@ -1130,6 +1175,10 @@ class Api extends CI_Controller {
             'pm25' => array(
                 'critical' => 'PM2.5 is forecast to reach unhealthy levels. Activate air purifiers and seal windows.',
                 'warning'  => 'PM2.5 is rising. Turn on air filtration as a preventive measure.'
+            ),
+            'co' => array(
+                'critical' => 'CO levels are dangerously high. Evacuate immediately, ventilate the area, and check for combustion sources.',
+                'warning'  => 'CO levels are elevated. Increase ventilation and inspect potential sources (gas appliances, vehicles).'
             )
         );
         return isset($msgs[$sensor][$level]) ? $msgs[$sensor][$level] : null;
