@@ -26,6 +26,7 @@
                             <option value="24">Last 24 Hours</option>
                             <option value="168" selected>Last 7 Days</option>
                             <option value="720">Last 30 Days</option>
+                            <option value="1440">Last 2 Months</option>
                         </select>
                     </div>
                     <div class="col-md-3">
