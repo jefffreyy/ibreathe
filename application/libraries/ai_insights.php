@@ -17,7 +17,7 @@ class Ai_insights {
         'temperature' => array('min' => 18, 'max' => 26, 'unit' => '°C', 'label' => 'Temperature'),
         'humidity'    => array('min' => 30, 'max' => 60, 'unit' => '%', 'label' => 'Humidity'),
         'co2'         => array('min' => 0,  'max' => 800, 'unit' => 'µg/m³', 'label' => 'CO₂'),
-        'pm25'        => array('min' => 0,  'max' => 12,  'unit' => 'μg/m³', 'label' => 'PM2.5'),
+        'gas'         => array('min' => 0,  'max' => 12,  'unit' => 'μg/m³', 'label' => 'PM2.5'),
         'co'          => array('min' => 0,  'max' => 9,   'unit' => 'ppm',   'label' => 'CO')
     );
 
@@ -104,7 +104,7 @@ class Ai_insights {
         $insights = array();
         if (count($readings) < 2) return $insights;
 
-        $sensor_types = array('temperature', 'humidity', 'co2', 'pm25', 'co');
+        $sensor_types = array('temperature', 'humidity', 'co2', 'gas', 'co');
 
         foreach ($sensor_types as $type) {
             $vals = array();
@@ -128,7 +128,7 @@ class Ai_insights {
 
                     if ($type === 'co2' && $pct_above > 30) {
                         $insights[] = $this->_make(self::WARNING, 'fas fa-wind', $room . ' CO₂ is ' . round($pct_above) . '% higher than other rooms — consider ventilation', 'Comparison');
-                    } elseif ($type === 'pm25' && $pct_above > 50) {
+                    } elseif ($type === 'gas' && $pct_above > 50) {
                         $insights[] = $this->_make(self::WARNING, 'fas fa-smog', $room . ' PM2.5 is significantly higher than other rooms (' . round($v, 1) . ' ' . $unit . ')', 'Comparison');
                     }
                 }
@@ -196,9 +196,9 @@ class Ai_insights {
                 }
             }
 
-            // PM2.5
-            if (isset($sensors['pm25'])) {
-                $v = $sensors['pm25']['value'];
+            // Gas
+            if (isset($sensors['gas'])) {
+                $v = $sensors['gas']['value'];
                 if ($v > 55) {
                     $insights[] = $this->_make(self::CRITICAL, 'fas fa-lungs', $room . ' PM2.5 is unhealthy (' . round($v, 1) . ' μg/m³) — use air purifier', 'Comfort');
                     $all_comfortable = false;
@@ -261,7 +261,7 @@ class Ai_insights {
 
             if ($increasing) {
                 $change = $recent[count($recent) - 1] - $recent[0];
-                $sev = ($sensor === 'co2' && $change > 200) || ($sensor === 'pm25' && $change > 15) ? self::WARNING : self::INFO;
+                $sev = ($sensor === 'co2' && $change > 200) || ($sensor === 'gas' && $change > 15) ? self::WARNING : self::INFO;
                 $insights[] = $this->_make($sev, 'fas fa-arrow-trend-up', $label . ' in ' . $room . ' is steadily rising over the last hour (+' . round($change, 1) . ')', 'Trends');
             }
 
@@ -269,8 +269,8 @@ class Ai_insights {
                 $insights[] = $this->_make(self::INFO, 'fas fa-arrow-trend-down', $label . ' in ' . $room . ' is trending downward — improving', 'Trends');
             }
 
-            // Spike detection for PM2.5
-            if ($sensor === 'pm25' && count($values) >= 6) {
+            // Spike detection for Gas
+            if ($sensor === 'gas' && count($values) >= 6) {
                 $mean = array_sum($values) / count($values);
                 $spikes = 0;
                 foreach ($values as $v) {
@@ -335,7 +335,7 @@ class Ai_insights {
             $co2 = isset($sensors['co2']) ? $sensors['co2']['value'] : 0;
             $hum = isset($sensors['humidity']) ? $sensors['humidity']['value'] : 0;
             $temp = isset($sensors['temperature']) ? $sensors['temperature']['value'] : 0;
-            $pm25 = isset($sensors['pm25']) ? $sensors['pm25']['value'] : 0;
+            $pm25 = isset($sensors['gas']) ? $sensors['gas']['value'] : 0;
 
             // High CO2 + High humidity → ventilation
             if ($co2 > 800 && $hum > 60) {

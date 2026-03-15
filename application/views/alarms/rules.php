@@ -84,7 +84,7 @@
                             <select class="form-control" name="sensor_type" id="rule_sensor" required>
                                 <option value="temperature">Temperature</option>
                                 <option value="humidity">Humidity</option>
-                                <option value="pm2.5">PM2.5</option>
+                                <option value="gas">PM2.5</option>
                                 <option value="co">CO (Carbon Monoxide)</option>
                             </select>
                         </div>

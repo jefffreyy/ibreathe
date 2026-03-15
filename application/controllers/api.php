@@ -16,7 +16,7 @@ class Api extends CI_Controller {
      * POST /api/data
      * Receive sensor readings from IoT devices
      * Auth: X-Device-Key header
-     * Body JSON: { "readings": { "temperature": 23.5, "humidity": 55.2, "co2": 450, "pm25": 12.3 } }
+     * Body JSON: { "readings": { "temperature": 23.5, "humidity": 55.2, "co2": 450, "gas": 12.3 } }
      */
     public function data() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -50,7 +50,7 @@ class Api extends CI_Controller {
             return;
         }
 
-        $valid_types = array('temperature', 'humidity', 'pm2.5', 'pm25', 'gas');
+        $valid_types = array('temperature', 'humidity', 'gas');
         $batch = array();
         $now = date('Y-m-d H:i:s');
         $alarms_triggered = array();
@@ -152,9 +152,8 @@ class Api extends CI_Controller {
             );
         }
 
-        // Normalize sensor_type from DB (e.g. 'pm2.5' -> 'pm25') for JS-safe keys
         $normalize_type = function($type) {
-            return ($type === 'pm2.5') ? 'pm25' : $type;
+            return $type;
         };
 
         // Organize readings by device
@@ -180,31 +179,31 @@ class Api extends CI_Controller {
             $trends[$key]['labels'][] = date('H:i', strtotime($t->time_bucket));
             $trends[$key]['values'][] = round(floatval($t->avg_value), 2);
         }
-        // Compute CO and calculate AQI from PM2.5
+        // Compute CO and calculate AQI from gas sensor
         $aqi_data = array();
         foreach ($readings as $device_id => $sensors) {
-            // Compute CO from PM2.5, temperature, humidity
-            if (isset($sensors['pm25'], $sensors['temperature'], $sensors['humidity'])) {
-                $pm25     = $sensors['pm25']['value'];
+            // Compute CO from gas, temperature, humidity
+            if (isset($sensors['gas'], $sensors['temperature'], $sensors['humidity'])) {
+                $gas_val  = $sensors['gas']['value'];
                 $temp_val = $sensors['temperature']['value'];
                 $hum_val  = $sensors['humidity']['value'];
 
-                $co_val = $this->co_calculator->calculate_co($pm25, $temp_val, $hum_val);
+                $co_val = $this->co_calculator->calculate_co($gas_val, $temp_val, $hum_val);
                 $readings[$device_id]['co'] = array(
                     'value'       => $co_val,
-                    'recorded_at' => $sensors['pm25']['recorded_at'],
+                    'recorded_at' => $sensors['gas']['recorded_at'],
                     'label'       => $this->co_calculator->get_co_label($co_val),
                     'color'       => $this->co_calculator->get_co_color($co_val)
                 );
 
-                $index = $this->aqi_calculator->calculate_index($pm25, $temp_val, $hum_val);
+                $index = $this->aqi_calculator->calculate_index($gas_val, $temp_val, $hum_val);
 
                 $aqi_data[$device_id] = array(
                     'value'      => $index,
                     'label'      => $this->aqi_calculator->get_aqi_label($index),
                     'color'      => $this->aqi_calculator->get_aqi_color($index),
                     'text_color' => $this->aqi_calculator->get_aqi_text_color($index),
-                    'pm25'       => $pm25,
+                    'gas'        => $gas_val,
                     'temperature'=> $temp_val,
                     'humidity'   => $hum_val,
                 );
@@ -397,23 +396,22 @@ class Api extends CI_Controller {
             $readings = $this->reading_model->get_latest_readings($d->id);
             $sensors = array();
             foreach ($readings as $r) {
-                $skey = ($r->sensor_type === 'pm2.5') ? 'pm25' : $r->sensor_type;
-                $sensors[$skey] = array(
+                $sensors[$r->sensor_type] = array(
                     'value'       => floatval($r->value),
                     'recorded_at' => $r->recorded_at
                 );
             }
 
-            // Compute CO from PM2.5, temperature, humidity
-            if (isset($sensors['pm25'], $sensors['temperature'], $sensors['humidity'])) {
+            // Compute CO from gas, temperature, humidity
+            if (isset($sensors['gas'], $sensors['temperature'], $sensors['humidity'])) {
                 $co_val = $this->co_calculator->calculate_co(
-                    $sensors['pm25']['value'],
+                    $sensors['gas']['value'],
                     $sensors['temperature']['value'],
                     $sensors['humidity']['value']
                 );
                 $sensors['co'] = array(
                     'value'       => $co_val,
-                    'recorded_at' => $sensors['pm25']['recorded_at'],
+                    'recorded_at' => $sensors['gas']['recorded_at'],
                     'label'       => $this->co_calculator->get_co_label($co_val),
                     'color'       => $this->co_calculator->get_co_color($co_val)
                 );
@@ -422,8 +420,8 @@ class Api extends CI_Controller {
             $aqi_value = null;
             $aqi_label = null;
             $aqi_color = null;
-            if (isset($sensors['pm25'])) {
-                $aqi_value = $this->aqi_calculator->calculate_aqi($sensors['pm25']['value']);
+            if (isset($sensors['gas'])) {
+                $aqi_value = $this->aqi_calculator->calculate_aqi($sensors['gas']['value']);
                 $aqi_label = $this->aqi_calculator->get_aqi_label($aqi_value);
                 $aqi_color = $this->aqi_calculator->get_aqi_color($aqi_value);
             }
@@ -463,14 +461,13 @@ class Api extends CI_Controller {
         $dashboard = $this->reading_model->get_dashboard_data();
         $devices = $this->device_model->get_devices();
 
-        // Organize readings by device (normalize pm2.5 -> pm25)
+        // Organize readings by device
         $readings = array();
         foreach ($dashboard['readings'] as $r) {
             if (!isset($readings[$r->device_id])) {
                 $readings[$r->device_id] = array();
             }
-            $skey = ($r->sensor_type === 'pm2.5') ? 'pm25' : $r->sensor_type;
-            $readings[$r->device_id][$skey] = array(
+            $readings[$r->device_id][$r->sensor_type] = array(
                 'value'       => floatval($r->value),
                 'recorded_at' => $r->recorded_at
             );
@@ -479,8 +476,7 @@ class Api extends CI_Controller {
         // Organize trends
         $trends = array();
         foreach ($dashboard['trends'] as $t) {
-            $tkey = ($t->sensor_type === 'pm2.5') ? 'pm25' : $t->sensor_type;
-            $key = $t->device_id . '_' . $tkey;
+            $key = $t->device_id . '_' . $t->sensor_type;
             if (!isset($trends[$key])) {
                 $trends[$key] = array('labels' => array(), 'values' => array());
             }
@@ -491,20 +487,20 @@ class Api extends CI_Controller {
         // Compute CO and calculate AQI
         $aqi_data = array();
         foreach ($readings as $device_id => $sensors) {
-            if (isset($sensors['pm25'], $sensors['temperature'], $sensors['humidity'])) {
+            if (isset($sensors['gas'], $sensors['temperature'], $sensors['humidity'])) {
                 $co_val = $this->co_calculator->calculate_co(
-                    $sensors['pm25']['value'],
+                    $sensors['gas']['value'],
                     $sensors['temperature']['value'],
                     $sensors['humidity']['value']
                 );
                 $readings[$device_id]['co'] = array(
                     'value'       => $co_val,
-                    'recorded_at' => $sensors['pm25']['recorded_at']
+                    'recorded_at' => $sensors['gas']['recorded_at']
                 );
             }
-            if (isset($sensors['pm25'])) {
-                $pm25_val = $sensors['pm25']['value'];
-                $aqi_val = $this->aqi_calculator->calculate_aqi($pm25_val);
+            if (isset($sensors['gas'])) {
+                $gas_val = $sensors['gas']['value'];
+                $aqi_val = $this->aqi_calculator->calculate_aqi($gas_val);
                 $aqi_data[$device_id] = array(
                     'value' => $aqi_val,
                     'label' => $this->aqi_calculator->get_aqi_label($aqi_val),
@@ -561,7 +557,7 @@ class Api extends CI_Controller {
             // Raw forecast data for forecast card
             $first_id = !empty($device_data) ? $device_data[0]['id'] : null;
             if ($first_id) {
-                foreach (array('temperature', 'humidity', 'pm25') as $st) {
+                foreach (array('temperature', 'humidity', 'gas') as $st) {
                     $fc = $this->ml_client->get_forecast($first_id, $st);
                     if ($fc && isset($fc['predictions']) && $fc['status'] === 'ok') {
                         $forecasts[$st] = $fc;
@@ -677,8 +673,7 @@ class Api extends CI_Controller {
         $sensor_labels = array(
             'temperature' => array('label' => 'Temperature', 'unit' => '°C'),
             'humidity'    => array('label' => 'Humidity', 'unit' => '%'),
-            'pm25'        => array('label' => 'PM2.5', 'unit' => 'µg/m³'),
-            'pm2.5'       => array('label' => 'PM2.5', 'unit' => 'µg/m³')
+            'gas'         => array('label' => 'PM2.5', 'unit' => 'µg/m³')
         );
         $info = isset($sensor_labels[$sensor_type]) ? $sensor_labels[$sensor_type] : array('label' => $sensor_type, 'unit' => '');
         $label = $info['label'];
@@ -786,7 +781,7 @@ class Api extends CI_Controller {
         $thresholds = array(
             'temperature' => array('warn' => 30, 'crit' => 35, 'low_warn' => 16, 'low_crit' => 10),
             'humidity'    => array('warn' => 70, 'crit' => 80, 'low_warn' => 30, 'low_crit' => 20),
-            'pm25'        => array('warn' => 35, 'crit' => 55)
+            'gas'         => array('warn' => 35, 'crit' => 55)
         );
 
         if (isset($thresholds[$sensor_type])) {
@@ -914,7 +909,7 @@ class Api extends CI_Controller {
         }
 
         $this->load->model('report_model');
-        $sensor_types = array('temperature', 'humidity', 'pm25');
+        $sensor_types = array('temperature', 'humidity', 'gas');
         $analytics = array();
 
         foreach ($sensor_types as $st) {
@@ -1071,7 +1066,7 @@ class Api extends CI_Controller {
         $this->load->library('ml_client');
         $ml_available = $this->ml_client->is_available();
 
-        $sensor_types = array('temperature', 'humidity', 'pm25', 'co');
+        $sensor_types = array('temperature', 'humidity', 'gas', 'co');
         $forecasts = array();
         $anomalies = array();
         $risks = array();
@@ -1080,14 +1075,13 @@ class Api extends CI_Controller {
         $latest = $this->reading_model->get_latest_readings($device_id);
         $latest_map = array();
         foreach ($latest as $r) {
-            $k = ($r->sensor_type === 'pm2.5') ? 'pm25' : $r->sensor_type;
-            $latest_map[$k] = floatval($r->value);
+            $latest_map[$r->sensor_type] = floatval($r->value);
         }
 
-        // Compute CO from PM2.5, temperature, humidity
-        if (isset($latest_map['pm25'], $latest_map['temperature'], $latest_map['humidity'])) {
+        // Compute CO from gas, temperature, humidity
+        if (isset($latest_map['gas'], $latest_map['temperature'], $latest_map['humidity'])) {
             $latest_map['co'] = $this->co_calculator->calculate_co(
-                $latest_map['pm25'],
+                $latest_map['gas'],
                 $latest_map['temperature'],
                 $latest_map['humidity']
             );
@@ -1097,7 +1091,7 @@ class Api extends CI_Controller {
         $thresholds = array(
             'temperature' => array('warn' => 30, 'crit' => 35),
             'humidity'    => array('warn' => 70, 'crit' => 80),
-            'pm25'        => array('warn' => 35, 'crit' => 55),
+            'gas'         => array('warn' => 35, 'crit' => 55),
             'co'          => array('warn' => 9, 'crit' => 35)
         );
 
@@ -1172,7 +1166,7 @@ class Api extends CI_Controller {
                 'critical' => 'Humidity forecast shows critical levels. Activate dehumidification and check for leaks.',
                 'warning'  => 'Humidity is rising. Turn on exhaust fans to prevent condensation.'
             ),
-            'pm25' => array(
+            'gas' => array(
                 'critical' => 'PM2.5 is forecast to reach unhealthy levels. Activate air purifiers and seal windows.',
                 'warning'  => 'PM2.5 is rising. Turn on air filtration as a preventive measure.'
             ),

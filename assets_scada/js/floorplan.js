@@ -89,11 +89,11 @@ function updateFloorPlan(devices) {
         if (sensors) {
             if (sensors.temperature) $group.find('.val-temp').text(sensors.temperature.value.toFixed(1));
             if (sensors.humidity) $group.find('.val-hum').text(sensors.humidity.value.toFixed(1));
-  // PM2.5 - with null check
+  // Gas - with null check
     var $gasElement = $group.find('.val-gas');
     if ($gasElement.length) {
-        if (sensors.pm25 && sensors.pm25.value != null) {
-            $gasElement.text(sensors.pm25.value.toFixed(1));
+        if (sensors.gas && sensors.gas.value != null) {
+            $gasElement.text(sensors.gas.value.toFixed(1));
         } else {
             $gasElement.text('--');
         }
@@ -115,15 +115,12 @@ function updateFloorPlan(devices) {
         } else {
             $group.find('.val-temp').attr('fill', '#1e293b');
         }
-        if (sensors && sensors.pm25 && sensors.pm25.value > 10) {
+        if (sensors && sensors.gas && sensors.gas.value > 50) {
+            $group.find('.val-gas').attr('fill', '#dc2626');
+        } else if (sensors && sensors.gas && sensors.gas.value > 10) {
             $group.find('.val-gas').attr('fill', '#d97706');
         } else {
             $group.find('.val-gas').attr('fill', '#1e293b');
-        }
-        if (sensors && sensors.pm25 && sensors.pm25.value > 50) {
-            $group.find('.val-pm25').attr('fill', '#dc2626');
-        } else {
-            $group.find('.val-pm25').attr('fill', '#1e293b');
         }
         // CO highlight
         if (sensors && sensors.co && sensors.co.value > 35) {
@@ -168,7 +165,7 @@ function updateDeviceStatus(devices) {
         var badge = '<span class="badge badge-secondary">Offline</span>';
         if (d.status === 'online') badge = '<span class="badge badge-success">Online</span>';
         else if (d.status === 'maintenance') badge = '<span class="badge badge-warning">Maint.</span>';
-        var lastSeen = d.last_seen ? d.last_seen.split(' ')[1] : 'Never';
+        var lastSeen = d.last_seen ? d.last_seen : 'Never';
         html += '<tr><td>' + escapeHtml(d.name) + '</td><td>' + badge + '</td><td class="text-muted" style="font-size:12px">' + lastSeen + '</td></tr>';
     });
 
@@ -340,7 +337,7 @@ function renderForecastCard(forecasts) {
     var sensorInfo = {
         'temperature': { label: 'Temp', unit: '°C', icon: 'fas fa-thermometer-half', color: '#ef4444' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fas fa-tint', color: '#6366f1' },
-        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' },
+        'gas':         { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' },
         'co':          { label: 'CO', unit: 'ppm', icon: 'fas fa-skull-crossbones', color: '#f59e0b' }
     };
 

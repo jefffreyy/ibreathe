@@ -23,7 +23,7 @@ function initGauges() {
     var gaugeConfigs = {
         'temperature': { min: 10, max: 45, colors: ['#3b82f6', '#22c55e', '#22c55e', '#ef4444'] },
         'humidity':    { min: 0,  max: 100, colors: ['#ef4444', '#22c55e', '#22c55e', '#3b82f6'] },
-        'pm25':        { min: 0,  max: 200, colors: ['#22c55e', '#eab308', '#f97316', '#ef4444'] },
+        'gas':         { min: 0,  max: 200, colors: ['#22c55e', '#eab308', '#f97316', '#ef4444'] },
         'co':          { min: 0,  max: 200, colors: ['#22c55e', '#eab308', '#f97316', '#ef4444'] }
     };
 
@@ -155,7 +155,7 @@ function updateGauges(readings) {
     if (!deviceId) return;
 
     var sensors = readings[deviceId];
-    var types = ['temperature', 'humidity', 'pm25', 'co'];
+    var types = ['temperature', 'humidity', 'gas', 'co'];
 
     types.forEach(function(type) {
         if (!sensors[type] || !gaugeCharts[type]) return;
@@ -173,7 +173,7 @@ function updateGauges(readings) {
         gaugeCharts[type].update();
 
         // Update text value
-        var display = (type === 'pm25' || type === 'co') ? Math.round(value) : value.toFixed(1);
+        var display = (type === 'gas' || type === 'co') ? Math.round(value) : value.toFixed(1);
         $('#val-' + type).text(display);
     });
 }
@@ -191,7 +191,7 @@ function updateDeviceStatus(devices) {
         if (d.status === 'online') badge = '<span class="badge badge-success">Online</span>';
         else if (d.status === 'maintenance') badge = '<span class="badge badge-warning">Maint.</span>';
 
-        var lastSeen = d.last_seen ? d.last_seen.split(' ')[1] : 'Never';
+        var lastSeen = d.last_seen ? d.last_seen : 'Never';
         html += '<tr><td>' + escapeHtml(d.name) + '</td><td>' + badge + '</td><td class="text-muted" style="font-size:12px">' + lastSeen + '</td></tr>';
     });
 
@@ -246,11 +246,11 @@ function updateTrendChart(trends) {
     if (!trendChart || !trends) return;
 
     // Find the first device's trend data
-    var tempKey = null, humKey = null, pm25Key = null, coKey = null;
+    var tempKey = null, humKey = null, gasKey = null, coKey = null;
     $.each(trends, function(key) {
         if (key.indexOf('_temperature') > -1) tempKey = key;
         if (key.indexOf('_humidity') > -1) humKey = key;
-        if (key.indexOf('_pm25') > -1) pm25Key = key;
+        if (key.indexOf('_gas') > -1) gasKey = key;
         if (key.indexOf('_co') > -1 && key.indexOf('_co2') === -1) coKey = key;
     });
 
@@ -261,8 +261,8 @@ function updateTrendChart(trends) {
     if (humKey && trends[humKey]) {
         trendChart.data.datasets[1].data = trends[humKey].values;
     }
-    if (pm25Key && trends[pm25Key]) {
-        trendChart.data.datasets[2].data = trends[pm25Key].values;
+    if (gasKey && trends[gasKey]) {
+        trendChart.data.datasets[2].data = trends[gasKey].values;
     }
     if (coKey && trends[coKey]) {
         trendChart.data.datasets[3].data = trends[coKey].values;
@@ -374,7 +374,7 @@ function renderForecastCard(forecasts) {
     var sensorInfo = {
         'temperature': { label: 'Temp', unit: '°C', icon: 'fas fa-thermometer-half', color: '#ef4444' },
         'humidity':    { label: 'Humidity', unit: '%', icon: 'fas fa-tint', color: '#6366f1' },
-        'pm25':        { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' },
+        'gas':         { label: 'PM2.5', unit: 'µg/m³', icon: 'fas fa-smog', color: '#10b981' },
         'co':          { label: 'CO', unit: 'ppm', icon: 'fas fa-skull-crossbones', color: '#f59e0b' }
     };
 

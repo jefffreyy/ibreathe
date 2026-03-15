@@ -16,7 +16,7 @@ class Device_model extends CI_Model {
         $sensors = array(
             array('device_id' => $device_id, 'sensor_type' => 'temperature', 'unit' => '°C', 'min_range' => -10, 'max_range' => 60),
             array('device_id' => $device_id, 'sensor_type' => 'humidity', 'unit' => '%', 'min_range' => 0, 'max_range' => 100),
-            array('device_id' => $device_id, 'sensor_type' => 'pm2.5', 'unit' => 'µg/m³', 'min_range' => 0, 'max_range' => 500)
+            array('device_id' => $device_id, 'sensor_type' => 'gas', 'unit' => 'µg/m³', 'min_range' => 0, 'max_range' => 500)
         );
         $this->db->insert_batch('tbl_scada_sensors', $sensors);
 

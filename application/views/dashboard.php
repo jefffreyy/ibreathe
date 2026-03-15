@@ -104,7 +104,7 @@
                     </div>
                 </div>
             </div>
-            <!-- PM2.5 Gauge -->
+            <!-- Gas Gauge -->
             <div class="col-lg-3 col-md-6">
                 <div class="card scada-gauge-card">
                     <div class="card-header">
@@ -112,8 +112,8 @@
                     </div>
                     <div class="card-body text-center">
                         <div class="gauge-container">
-                            <canvas id="gauge-pm25" width="200" height="120"></canvas>
-                            <div class="gauge-value" id="val-pm25">--</div>
+                            <canvas id="gauge-gas" width="200" height="120"></canvas>
+                            <div class="gauge-value" id="val-gas">--</div>
                             <div class="gauge-unit">µg/m³</div>
                         </div>
                     </div>

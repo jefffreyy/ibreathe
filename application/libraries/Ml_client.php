@@ -87,7 +87,7 @@ class Ml_client {
             'temperature' => array('label' => 'Temperature', 'unit' => '°C'),
             'humidity'    => array('label' => 'Humidity', 'unit' => '%'),
             'co2'         => array('label' => 'CO₂', 'unit' => 'µg/m³'),
-            'pm25'        => array('label' => 'PM2.5', 'unit' => 'μg/m³'),
+            'gas'         => array('label' => 'PM2.5', 'unit' => 'μg/m³'),
             'co'          => array('label' => 'CO', 'unit' => 'ppm'),
         );
         $count = 0;

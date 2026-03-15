@@ -40,7 +40,7 @@
         <div class="row" id="pred-risk-cards" style="display:none">
             <div class="col-md-3" id="risk-temperature"></div>
             <div class="col-md-3" id="risk-humidity"></div>
-            <div class="col-md-3" id="risk-pm25"></div>
+            <div class="col-md-3" id="risk-gas"></div>
             <div class="col-md-3" id="risk-co"></div>
         </div>
 
@@ -53,7 +53,7 @@
                         <div class="btn-group btn-group-sm" id="forecast-sensor-btns">
                             <button class="btn btn-outline-secondary btn-xs active" data-sensor="temperature" style="font-size:10px; padding:2px 8px;">Temp</button>
                             <button class="btn btn-outline-secondary btn-xs" data-sensor="humidity" style="font-size:10px; padding:2px 8px;">Humidity</button>
-                            <button class="btn btn-outline-secondary btn-xs" data-sensor="pm25" style="font-size:10px; padding:2px 8px;">PM2.5</button>
+                            <button class="btn btn-outline-secondary btn-xs" data-sensor="gas" style="font-size:10px; padding:2px 8px;">PM2.5</button>
                             <button class="btn btn-outline-secondary btn-xs" data-sensor="co" style="font-size:10px; padding:2px 8px;">CO</button>
                         </div>
                     </div>

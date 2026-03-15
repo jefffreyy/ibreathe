@@ -259,7 +259,7 @@
                         
                         if (row.sensor_type == 'humidity') {
                             tableHtml += ' <span class="badge badge-info">💧</span>';
-                        } else if (row.sensor_type == 'pm2.5') {
+                        } else if (row.sensor_type == 'gas') {
                             tableHtml += ' <span class="badge badge-warning">⚠️</span>';
                         }
                         
