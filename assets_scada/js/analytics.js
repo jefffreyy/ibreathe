@@ -114,6 +114,9 @@ function renderDistributionChart(analytics) {
 }
 
 function renderHourlyChart(analytics) {
+    var $canvas = $('#hourly-chart');
+    if ($canvas.length === 0) return;
+
     if (hourlyChart) hourlyChart.destroy();
 
     var colors = { temperature: '#ef4444', humidity: '#6366f1', gas: '#10b981', co: '#f59e0b'};
@@ -152,7 +155,7 @@ function renderHourlyChart(analytics) {
         scales.y2 = { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#f59e0b' } };
     }
 
-    hourlyChart = new Chart($('#hourly-chart')[0].getContext('2d'), {
+    hourlyChart = new Chart($canvas[0].getContext('2d'), {
         type: 'line',
         data: { labels: labels, datasets: datasets },
         options: {

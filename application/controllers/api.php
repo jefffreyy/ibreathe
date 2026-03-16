@@ -606,7 +606,34 @@ class Api extends CI_Controller {
 
         // Get trend data
         $this->load->model('report_model');
-        $data = $this->report_model->get_trend_data($device_id, $sensor_type, $from, $to);
+
+        if ($sensor_type === 'co') {
+            // CO is calculated from gas, temperature, humidity — not stored directly
+            $this->load->library('co_calculator');
+            $gas_data  = $this->report_model->get_trend_data($device_id, 'gas', $from, $to);
+            $temp_data = $this->report_model->get_trend_data($device_id, 'temperature', $from, $to);
+            $hum_data  = $this->report_model->get_trend_data($device_id, 'humidity', $from, $to);
+
+            $temp_map = array();
+            $hum_map = array();
+            foreach ($temp_data as $r) { $temp_map[$r->time_bucket] = floatval($r->avg_value); }
+            foreach ($hum_data as $r) { $hum_map[$r->time_bucket] = floatval($r->avg_value); }
+
+            $data = array();
+            foreach ($gas_data as $r) {
+                $tb = $r->time_bucket;
+                if (isset($temp_map[$tb]) && isset($hum_map[$tb])) {
+                    $obj = new stdClass();
+                    $obj->time_bucket = $tb;
+                    $obj->avg_value = $this->co_calculator->calculate_co(floatval($r->avg_value), $temp_map[$tb], $hum_map[$tb]);
+                    $obj->min_value = $obj->avg_value;
+                    $obj->max_value = $obj->avg_value;
+                    $data[] = $obj;
+                }
+            }
+        } else {
+            $data = $this->report_model->get_trend_data($device_id, $sensor_type, $from, $to);
+        }
 
         if (empty($data)) {
             $this->_json_response(array(
@@ -1136,8 +1163,39 @@ class Api extends CI_Controller {
         $sensor_types = array('temperature', 'humidity', 'gas');
         $analytics = array();
 
+        // Pre-fetch all sensor data for CO calculation
+        $raw_data = array();
+        foreach (array('temperature', 'humidity', 'gas') as $s) {
+            $raw_data[$s] = $this->report_model->get_trend_data($device_id, $s, $from, $to);
+        }
+
+        // Build CO calculated data from gas, temperature, humidity aligned by time bucket
+        $this->load->library('co_calculator');
+        $temp_map = array();
+        $hum_map = array();
+        if (!empty($raw_data['temperature'])) {
+            foreach ($raw_data['temperature'] as $r) { $temp_map[$r->time_bucket] = floatval($r->avg_value); }
+        }
+        if (!empty($raw_data['humidity'])) {
+            foreach ($raw_data['humidity'] as $r) { $hum_map[$r->time_bucket] = floatval($r->avg_value); }
+        }
+
+        $co_data = array();
+        foreach ($raw_data['gas'] as $r) {
+            $tb = $r->time_bucket;
+            if (isset($temp_map[$tb]) && isset($hum_map[$tb])) {
+                $co_val = $this->co_calculator->calculate_co(floatval($r->avg_value), $temp_map[$tb], $hum_map[$tb]);
+                $obj = new stdClass();
+                $obj->time_bucket = $tb;
+                $obj->avg_value = $co_val;
+                $co_data[] = $obj;
+            }
+        }
+        $raw_data['co'] = $co_data;
+        $sensor_types[] = 'co';
+
         foreach ($sensor_types as $st) {
-            $data = $this->report_model->get_trend_data($device_id, $st, $from, $to);
+            $data = $raw_data[$st];
             if (empty($data)) continue;
 
             $values = array();
@@ -1212,15 +1270,16 @@ class Api extends CI_Controller {
             );
         }
 
-        // Correlations between sensor pairs
+        // Correlations between sensor pairs (use pre-fetched raw_data)
         $correlations = array();
         $sensor_keys = array_keys($analytics);
+        $corr_labels = array('temperature' => 'temperature', 'humidity' => 'humidity', 'gas' => 'PM2.5', 'co' => 'CO');
         for ($i = 0; $i < count($sensor_keys); $i++) {
             for ($j = $i + 1; $j < count($sensor_keys); $j++) {
                 $s1 = $sensor_keys[$i];
                 $s2 = $sensor_keys[$j];
-                $d1 = $this->report_model->get_trend_data($device_id, $s1, $from, $to);
-                $d2 = $this->report_model->get_trend_data($device_id, $s2, $from, $to);
+                $d1 = $raw_data[$s1];
+                $d2 = $raw_data[$s2];
 
                 // Align by time bucket
                 $map2 = array();
@@ -1235,7 +1294,9 @@ class Api extends CI_Controller {
 
                 if (count($pairs) > 5) {
                     $corr = $this->_pearson_correlation($pairs);
-                    $correlations[] = array('pair' => $s1 . ' vs ' . $s2, 'r' => round($corr, 3));
+                    $label1 = isset($corr_labels[$s1]) ? $corr_labels[$s1] : $s1;
+                    $label2 = isset($corr_labels[$s2]) ? $corr_labels[$s2] : $s2;
+                    $correlations[] = array('pair' => $label1 . ' vs ' . $label2, 'r' => round($corr, 3));
                 }
             }
         }
