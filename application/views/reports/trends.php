@@ -144,13 +144,14 @@ function loadTrend() {
 
         var colors = { temperature: '#ef4444', humidity: '#3b82f6', gas: '#10b981', co: '#f59e0b'};
         var units = { temperature: '°C', humidity: '%', gas: 'µg/m³', co: 'ppm'};
+        var displayNames = { temperature: 'Temperature', humidity: 'Humidity', gas: 'PM2.5', co: 'CO' };
 
         trendMainChart = new Chart($('#trend-main-chart')[0].getContext('2d'), {
             type: 'line',
             data: {
                 labels: labels.map(function(l) { return l.substring(5); }),
                 datasets: [{
-                    label: sensor.charAt(0).toUpperCase() + sensor.slice(1) + ' (' + units[sensor] + ')',
+                    label: displayNames[sensor] + ' (' + units[sensor] + ')',
                     borderColor: colors[sensor],
                     backgroundColor: colors[sensor] + '22',
                     data: values,

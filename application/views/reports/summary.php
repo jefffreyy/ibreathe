@@ -86,7 +86,8 @@
                         <?php foreach ($summary as $s): ?>
                         <tr>
                             <td><?= htmlspecialchars($s->device_name) ?></td>
-                            <td><?= ucfirst($s->sensor_type) ?></td>
+                            <?php $sensor_display = array('temperature'=>'Temperature','humidity'=>'Humidity','gas'=>'PM2.5','co'=>'CO'); ?>
+                            <td><?= isset($sensor_display[$s->sensor_type]) ? $sensor_display[$s->sensor_type] : ucfirst($s->sensor_type) ?></td>
                             <td class="text-info"><?= number_format($s->min_val, 1) ?></td>
                             <td class="text-danger"><?= number_format($s->max_val, 1) ?></td>
                             <td class="text-success"><?= number_format($s->avg_val, 1) ?></td>

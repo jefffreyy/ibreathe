@@ -673,7 +673,8 @@ class Api extends CI_Controller {
         $sensor_labels = array(
             'temperature' => array('label' => 'Temperature', 'unit' => '°C'),
             'humidity'    => array('label' => 'Humidity', 'unit' => '%'),
-            'gas'         => array('label' => 'PM2.5', 'unit' => 'µg/m³')
+            'gas'         => array('label' => 'PM2.5', 'unit' => 'µg/m³'),
+            'co'          => array('label' => 'CO', 'unit' => 'ppm')
         );
         $info = isset($sensor_labels[$sensor_type]) ? $sensor_labels[$sensor_type] : array('label' => $sensor_type, 'unit' => '');
         $label = $info['label'];
@@ -781,7 +782,8 @@ class Api extends CI_Controller {
         $thresholds = array(
             'temperature' => array('warn' => 30, 'crit' => 35, 'low_warn' => 16, 'low_crit' => 10),
             'humidity'    => array('warn' => 70, 'crit' => 80, 'low_warn' => 30, 'low_crit' => 20),
-            'gas'         => array('warn' => 35, 'crit' => 55)
+            'gas'         => array('warn' => 35, 'crit' => 55),
+            'co'          => array('warn' => 9, 'crit' => 35)
         );
 
         if (isset($thresholds[$sensor_type])) {
@@ -875,6 +877,228 @@ class Api extends CI_Controller {
                     'category' => 'comfort',
                     'source'   => 'rule'
                 );
+            }
+        }
+
+        // 7. Data coverage & time span
+        $first_time = $timestamps[0];
+        $last_time = end($timestamps);
+        $time_diff_sec = strtotime($last_time) - strtotime($first_time);
+        $time_diff_hours = round($time_diff_sec / 3600, 1);
+        $time_diff_days = round($time_diff_sec / 86400, 1);
+
+        if ($time_diff_hours > 0) {
+            $readings_per_hour = round($count / $time_diff_hours, 1);
+            $span_text = $time_diff_days >= 1 ? round($time_diff_days, 1) . ' day(s)' : round($time_diff_hours, 1) . ' hour(s)';
+            $insights[] = array(
+                'severity' => 'info',
+                'icon'     => 'fas fa-database',
+                'message'  => 'Data spans ' . $span_text . ' with ' . $count . ' data points (~' . $readings_per_hour . ' readings/hour). Device: ' . $device->name . '.',
+                'category' => 'coverage',
+                'source'   => 'rule'
+            );
+        }
+
+        // 8. Percentile analysis (median and 90th percentile)
+        $sorted_vals = $values;
+        sort($sorted_vals);
+        $median = $sorted_vals[intval($count / 2)];
+        $p90_idx = intval($count * 0.9);
+        $p10_idx = intval($count * 0.1);
+        $p90 = $sorted_vals[min($p90_idx, $count - 1)];
+        $p10 = $sorted_vals[max($p10_idx, 0)];
+
+        $insights[] = array(
+            'severity' => 'info',
+            'icon'     => 'fas fa-percentage',
+            'message'  => $label . ' — Median: ' . round($median, 1) . $unit . ', 10th percentile: ' . round($p10, 1) . $unit . ', 90th percentile: ' . round($p90, 1) . $unit . '. Most readings cluster around ' . round($median, 1) . $unit . '.',
+            'category' => 'statistics',
+            'source'   => 'rule'
+        );
+
+        // 9. Hourly pattern analysis — find peak and quiet hours
+        $hourly_data = array();
+        foreach ($data as $row) {
+            $hour = date('G', strtotime($row->time_bucket));
+            if (!isset($hourly_data[$hour])) {
+                $hourly_data[$hour] = array('sum' => 0, 'count' => 0);
+            }
+            $hourly_data[$hour]['sum'] += floatval($row->avg_value);
+            $hourly_data[$hour]['count']++;
+        }
+
+        if (count($hourly_data) >= 4) {
+            $hourly_avg = array();
+            foreach ($hourly_data as $h => $d) {
+                $hourly_avg[$h] = $d['sum'] / $d['count'];
+            }
+            $peak_hour = array_keys($hourly_avg, max($hourly_avg))[0];
+            $low_hour = array_keys($hourly_avg, min($hourly_avg))[0];
+            $peak_formatted = sprintf('%02d:00', $peak_hour);
+            $low_formatted = sprintf('%02d:00', $low_hour);
+
+            $insights[] = array(
+                'severity' => 'info',
+                'icon'     => 'fas fa-clock',
+                'message'  => $label . ' peaks around ' . $peak_formatted . ' (avg ' . round(max($hourly_avg), 1) . $unit . ') and is lowest around ' . $low_formatted . ' (avg ' . round(min($hourly_avg), 1) . $unit . ').',
+                'category' => 'pattern',
+                'source'   => 'rule'
+            );
+        }
+
+        // 10. Rate of change — find the fastest rising/dropping period
+        if ($count >= 3) {
+            $max_rise = 0;
+            $max_drop = 0;
+            $rise_time = '';
+            $drop_time = '';
+            for ($i = 1; $i < $count; $i++) {
+                $diff = $values[$i] - $values[$i - 1];
+                if ($diff > $max_rise) {
+                    $max_rise = $diff;
+                    $rise_time = isset($timestamps[$i]) ? $timestamps[$i] : '';
+                }
+                if ($diff < $max_drop) {
+                    $max_drop = $diff;
+                    $drop_time = isset($timestamps[$i]) ? $timestamps[$i] : '';
+                }
+            }
+
+            if ($max_rise > 0) {
+                $sev_rise = ($sensor_type === 'gas' && $max_rise > 20) || ($sensor_type === 'co' && $max_rise > 5) ? 'warning' : 'info';
+                $insights[] = array(
+                    'severity' => $sev_rise,
+                    'icon'     => 'fas fa-bolt',
+                    'message'  => 'Largest spike: +' . round($max_rise, 1) . $unit . ' at ' . substr($rise_time, 5) . '. ' . ($sev_rise === 'warning' ? 'This rapid increase may indicate a pollution event or source activation.' : 'Normal fluctuation.'),
+                    'category' => 'rate',
+                    'source'   => 'rule'
+                );
+            }
+
+            if ($max_drop < 0) {
+                $insights[] = array(
+                    'severity' => 'info',
+                    'icon'     => 'fas fa-arrow-down',
+                    'message'  => 'Largest drop: ' . round($max_drop, 1) . $unit . ' at ' . substr($drop_time, 5) . '. May indicate ventilation improvement or air purifier activation.',
+                    'category' => 'rate',
+                    'source'   => 'rule'
+                );
+            }
+        }
+
+        // 11. Consecutive threshold breach duration (for gas/co)
+        if (in_array($sensor_type, array('gas', 'co'))) {
+            $warn_thresh = ($sensor_type === 'gas') ? 35 : 9;
+            $max_streak = 0;
+            $current_streak = 0;
+            $streak_start = '';
+
+            foreach ($data as $idx => $row) {
+                if (floatval($row->avg_value) > $warn_thresh) {
+                    if ($current_streak === 0) $streak_start = $row->time_bucket;
+                    $current_streak++;
+                    if ($current_streak > $max_streak) $max_streak = $current_streak;
+                } else {
+                    $current_streak = 0;
+                }
+            }
+
+            if ($max_streak >= 3) {
+                $insights[] = array(
+                    'severity' => 'warning',
+                    'icon'     => 'fas fa-hourglass-half',
+                    'message'  => $label . ' exceeded ' . $warn_thresh . $unit . ' for ' . $max_streak . ' consecutive readings starting at ' . substr($streak_start, 5) . '. Prolonged exposure may pose health risks.',
+                    'category' => 'duration',
+                    'source'   => 'rule'
+                );
+            }
+        }
+
+        // 12. PM2.5 health impact based on WHO guidelines
+        if ($sensor_type === 'gas') {
+            $who_24h = 15; // WHO 24-hour guideline: 15 µg/m³
+            $above_who = 0;
+            foreach ($values as $v) {
+                if ($v > $who_24h) $above_who++;
+            }
+            $pct_who = round(($above_who / $count) * 100, 1);
+
+            if ($pct_who > 0) {
+                $sev = $pct_who > 75 ? 'critical' : ($pct_who > 40 ? 'warning' : 'info');
+                $insights[] = array(
+                    'severity' => $sev,
+                    'icon'     => 'fas fa-lungs',
+                    'message'  => $pct_who . '% of PM2.5 readings exceeded the WHO 24-hour guideline of ' . $who_24h . 'µg/m³. Average exposure: ' . round($avg_val, 1) . 'µg/m³. ' . ($avg_val > 55 ? 'Consider using HEPA air purifiers and minimizing outdoor air intake.' : ($avg_val > 35 ? 'Sensitive individuals should take precautions.' : 'Generally manageable but monitor closely.')),
+                    'category' => 'health',
+                    'source'   => 'rule'
+                );
+            } else {
+                $insights[] = array(
+                    'severity' => 'good',
+                    'icon'     => 'fas fa-heartbeat',
+                    'message'  => 'All PM2.5 readings are within the WHO 24-hour guideline (' . $who_24h . 'µg/m³). Air quality is safe for all individuals.',
+                    'category' => 'health',
+                    'source'   => 'rule'
+                );
+            }
+        }
+
+        // 13. CO health impact based on EPA guidelines
+        if ($sensor_type === 'co') {
+            $epa_8h = 9; // EPA 8-hour average: 9 ppm
+            $above_epa = 0;
+            foreach ($values as $v) {
+                if ($v > $epa_8h) $above_epa++;
+            }
+            $pct_epa = round(($above_epa / $count) * 100, 1);
+
+            if ($pct_epa > 0) {
+                $sev = $avg_val > 35 ? 'critical' : ($pct_epa > 30 ? 'warning' : 'info');
+                $insights[] = array(
+                    'severity' => $sev,
+                    'icon'     => 'fas fa-skull-crossbones',
+                    'message'  => $pct_epa . '% of CO readings exceeded the EPA 8-hour limit of ' . $epa_8h . 'ppm. Peak: ' . round($max_val, 1) . 'ppm. ' . ($avg_val > 35 ? 'DANGER: Evacuate and ventilate immediately. Check for combustion sources.' : 'Check for potential sources: gas stoves, heaters, or vehicle exhaust.'),
+                    'category' => 'health',
+                    'source'   => 'rule'
+                );
+            } else {
+                $insights[] = array(
+                    'severity' => 'good',
+                    'icon'     => 'fas fa-shield-alt',
+                    'message'  => 'All CO readings are within the EPA 8-hour limit (' . $epa_8h . 'ppm). No carbon monoxide hazard detected.',
+                    'category' => 'health',
+                    'source'   => 'rule'
+                );
+            }
+        }
+
+        // 14. Day vs Night comparison (if data spans enough time)
+        if ($time_diff_hours >= 12 && count($hourly_data) >= 6) {
+            $day_vals = array();
+            $night_vals = array();
+            foreach ($data as $row) {
+                $h = (int)date('G', strtotime($row->time_bucket));
+                if ($h >= 6 && $h < 22) {
+                    $day_vals[] = floatval($row->avg_value);
+                } else {
+                    $night_vals[] = floatval($row->avg_value);
+                }
+            }
+            if (count($day_vals) > 0 && count($night_vals) > 0) {
+                $day_avg = array_sum($day_vals) / count($day_vals);
+                $night_avg = array_sum($night_vals) / count($night_vals);
+                $diff_pct = ($day_avg > 0) ? round(abs($night_avg - $day_avg) / $day_avg * 100, 1) : 0;
+
+                if ($diff_pct > 10) {
+                    $higher = $day_avg > $night_avg ? 'daytime' : 'nighttime';
+                    $insights[] = array(
+                        'severity' => 'info',
+                        'icon'     => 'fas fa-adjust',
+                        'message'  => $label . ' is ' . $diff_pct . '% higher during ' . $higher . '. Day avg: ' . round($day_avg, 1) . $unit . ', Night avg: ' . round($night_avg, 1) . $unit . '.',
+                        'category' => 'pattern',
+                        'source'   => 'rule'
+                    );
+                }
             }
         }
 

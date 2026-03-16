@@ -255,7 +255,8 @@
                     $.each(data, function(index, row) {
                         tableHtml += '<tr>';
                         tableHtml += '<td><span class="badge badge-primary">' + row.id + '</span></td>';
-                        tableHtml += '<td>' + row.sensor_type;
+                        var sensorDisplayNames = { temperature: 'Temperature', humidity: 'Humidity', gas: 'PM2.5', co: 'CO' };
+                        tableHtml += '<td>' + (sensorDisplayNames[row.sensor_type] || row.sensor_type);
                         
                         if (row.sensor_type == 'humidity') {
                             tableHtml += ' <span class="badge badge-info">💧</span>';

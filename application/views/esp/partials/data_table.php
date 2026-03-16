@@ -14,7 +14,10 @@
                 <tr>
                     <td><span class="badge badge-primary"><?php echo $row->id; ?></span></td>
                     <td>
-                        <?php echo htmlspecialchars($row->sensor_type); ?>
+                        <?php
+                            $sensor_display = array('temperature'=>'Temperature','humidity'=>'Humidity','gas'=>'PM2.5','co'=>'CO');
+                            echo isset($sensor_display[$row->sensor_type]) ? $sensor_display[$row->sensor_type] : htmlspecialchars($row->sensor_type);
+                        ?>
                         <?php if($row->sensor_type == 'humidity'): ?>
                             <span class="badge badge-info">💧</span>
                         <?php elseif($row->sensor_type == 'gas'): ?>
